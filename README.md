@@ -1,5 +1,7 @@
 # 新瑪奇料理濃度調節器 (Mabinogi Cooking Concentration Adjuster)
 
+https://hinake27.github.io/Mabinogi-Tw-Food/
+
 ## 專案簡介
 這是為新瑪奇線上遊戲開發的料理濃度調節工具。用於協助玩家在製作料理時精確控制食材的濃度配比，提高料理成功率。
 
