@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>濃度調節器</title>
+    <style>
+        /* 基本頁面設置 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #2f2f2f;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 主容器樣式 */
+        .container {
+            width: 40%;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 2px solid #D45571;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* GIF圖片樣式 */
+        .gif-image {
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #FCC9B9;
+        }
+
+        /* 濃度條主體樣式 */
+        .concentration-bar {
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #D45571;
+            position: relative;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            overflow: visible; /* 改為visible以顯示箭頭 */
+        }
+
+        /* 濃度填充區域基本樣式 */
+        .fill-section {
+            height: 100%;
+            position: absolute;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* 箭頭指示器 */
+        .fill-section::before {
+            content: '';
+            position: absolute;
+            right: -8px; /* 箭頭的位置（相對於濃度條的右側） */
+            top: -80%; /* 改成100%，箭頭移到濃度條的下方 */
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent; /* 左側透明 */
+            border-right: 8px solid transparent; /* 右側透明 */
+            border-bottom: 12px solid #ffffff; /* 底部為白色，箭頭指向上 */
+            filter: drop-shadow(0 0 5px #000000); /* 添加陰影 */
+            animation: arrowGlow 1.5s ease-in-out infinite alternate; /* 動態效果 */
+        }
+
+        /* 末端發光效果 */
+        .fill-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            box-shadow: 
+                0 0 5px #003cff,
+                0 0 5px #ff0000,
+                0 0 5px #00ff62,
+                0 0 5px #D45571,
+                0 0 5px #FCC9B9;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        /* 發光動畫定義 */
+        @keyframes glow {
+            from {
+                box-shadow: 
+                    0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 15px #D45571,
+                    0 0 20px #D45571;
+            }
+            to {
+                box-shadow: 
+                    0 0 10px #fff,
+                    0 0 20px #fff,
+                    0 0 25px #D45571,
+                    0 0 30px #D45571;
+            }
+        }
+
+        /* 箭頭發光動畫 */
+        @keyframes arrowGlow {
+            from {
+                filter: drop-shadow(0 0 5px #e5ff00);
+            }
+            to {
+                filter: drop-shadow(0 0 10px #23700b);
+            }
+        }
+
+        /* 控制區域樣式 */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .control-group {
+            flex: 1;
+            padding: 15px;
+            background: rgba(212, 85, 113, 0.1);
+            border-radius: 8px;
+            border: 1px solid #D45571;
+        }
+
+        /* 輸入框樣式 */
+        .input-field {
+            width: 90%;
+            background: rgba(252, 201, 185, 0.1);
+            border: 2px solid #D45571;
+            color: #FCC9B9;
+            padding: 8px;
+            font-size: 14px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #FCC9B9;
+            box-shadow: 0 0 10px rgba(212, 85, 113, 0.3);
+        }
+
+        /* 三種不同顏色的濃度區段 */
+        .section1 { 
+            background: linear-gradient(to right, #5D8CAE, #5D8CAE);
+            z-index: 3;
+        }
+        .section2 { 
+            background: linear-gradient(to right, #5B3256, #5B3256);
+            z-index: 2;
+        }
+        .section3 { 
+            background: linear-gradient(to right, #C91F37, #C91F37);
+            z-index: 1;
+        }
+
+        /* 文字樣式 */
+        .percentage {
+            color: #FCC9B9;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(212, 85, 113, 0.3);
+        }
+
+        .error {
+            color: #D45571;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+
+        .label {
+            color: #FCC9B9;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .container {
+                width: 80%;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 95%;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .control-group {
+                width: 100%;
+            }
+            .input-field {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="cook2.gif" alt="濃度指示器" class="gif-image">
+        <div class="concentration-bar">
+            <div id="section1" class="fill-section section1"></div>
+            <div id="section2" class="fill-section section2"></div>
+            <div id="section3" class="fill-section section3"></div>
+        </div>
+        <div class="percentage" id="percentageDisplay">總濃度：0%</div>
+        <div class="error" id="errorMessage"></div>
+        <div class="controls">
+            <div class="control-group">
+                <div class="label">濃度1</div>
+                <input type="number" class="input-field" id="percent1" value="0" min="0" max="100">
+            </div>
+            <div class="control-group">
+                <div class="label">濃度2</div>
+                <input type="number" class="input-field" id="percent2" value="0" min="0" max="100">
+            </div>
+            <div class="control-group">
+                <div class="label">濃度3</div>
+                <input type="number" class="input-field" id="percent3" value="0" min="0" max="100">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateConcentrations() {
+            const values = [
+                parseInt(document.getElementById('percent1').value) || 0,
+                parseInt(document.getElementById('percent2').value) || 0,
+                parseInt(document.getElementById('percent3').value) || 0
+            ];
+            
+            const total = values.reduce((a, b) => a + b, 0);
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (total > 100) {
+                errorMessage.textContent = '總濃度不能超過100%';
+            } else {
+                errorMessage.textContent = '';
+            }
+
+            document.getElementById('percentageDisplay').textContent = 
+                `總濃度：${Math.min(total, 100)}%`;
+
+            let currentLeft = 0;
+            for (let i = 0; i < 3; i++) {
+                const section = document.getElementById(`section${i + 1}`);
+                const width = values[i];
+                section.style.width = `${width}%`;
+                section.style.left = `${currentLeft}%`;
+                currentLeft += width;
+            }
+        }
+
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('input', function() {
+                let value = parseInt(this.value) || 0;
+                value = Math.max(0, Math.min(100, value));
+                this.value = value;
+                updateConcentrations();
+            });
+        });
+
+        updateConcentrations();
+    </script>
+</body>
+</html>
